@@ -1,59 +1,59 @@
 package com.library.app.entity;
 
-import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Table(name = "book")
+@NoArgsConstructor
+@Setter
+@Getter
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int bookId;
-    private String title;
-    private String author;
-    private boolean availability;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "bookCategoryId")
-    private BookCategory bookCategory;
+    @Column(name = "name", nullable = false)
+    private String name;
+    @Column(name = "description", nullable = false)
+    private String description;
 
-    // Getters and Setters
-    public int getBookId() {
-        return bookId;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @JoinTable(name = "books_authors", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = { @JoinColumn(name = "author_id")})
+    private Set<Author> authors = new HashSet<Author>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "books_categories", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = { @JoinColumn(name = "category_id")})
+    private Set<Category> categories = new HashSet<Category>();
+    public Book(String name, String description) {
+        this.name = name;
+        this.description = description;
     }
 
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
+    public void addAuthors(Author author) {
+        this.authors.add(author);
+        author.getBooks().add(this);
     }
 
-    public String getTitle() {
-        return title;
+    public void removeAuthors(Author author) {
+        this.authors.remove(author);
+        author.getBooks().remove(this);
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void addCategories(Category category) {
+        this.categories.add(category);
+        category.getBooks().add(this);
     }
 
-    public String getAuthor() {
-        return author;
+    public void removeCategories(Category category) {
+        this.categories.remove(category);
+        category.getBooks().remove(this);
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public boolean isAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(boolean availability) {
-        this.availability = availability;
-    }
-
-    public BookCategory getBookCategory() {
-        return bookCategory;
-    }
-
-    public void setBookCategory(BookCategory bookCategory) {
-        this.bookCategory = bookCategory;
-    }
 }
 
